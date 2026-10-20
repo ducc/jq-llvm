@@ -200,7 +200,7 @@ impl<'a> Gen<'a> {
         for (n, a, f) in NATIVES {
             natives.insert((*n, *a), *f);
         }
-        for (n, a, f) in crate::rt::builtins::NATIVES {
+        for (n, a, f) in crate::rt::builtins::NATIVES.iter().chain(crate::rt::net::NATIVES) {
             natives.insert((*n, *a), *f);
         }
         Gen {

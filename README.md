@@ -75,7 +75,91 @@ the filter argument:
 Input is streamed. Values are processed as they arrive, so `tail -f log.json | ./prog`
 works, and inputs don't need to fit in memory.
 
-### Libraries
+## Sockets (jq-llvm extension)
+
+jq has no network I/O. jq-llvm adds a few low-level socket builtins so protocols
+can be written in plain jq on top of them. File descriptors are plain numbers, data
+is passed as strings, and failures are ordinary jq errors you can `try`/`catch`.
+
+| builtin | description |
+|---|---|
+| `socket_connect($host; $port)` | TCP connect (IPv4/IPv6); returns an fd |
+| `socket_listen($host; $port)` | bind and listen (`$host` may be `null` for any address); returns an fd |
+| `socket_accept($fd)` | accept a connection; returns the client's fd |
+| `socket_send($fd; $data)` | send the whole string; returns the byte count |
+| `socket_recv($fd; $max)` | receive up to `$max` bytes; `""` at end of stream |
+| `socket_shutdown($fd)` | close the sending side |
+| `socket_close($fd)` | close the fd |
+
+```jq
+socket_connect("example.com"; 80) as $fd
+| socket_send($fd; "GET / HTTP/1.0\r\nHost: example.com\r\n\r\n")
+| socket_recv($fd; 4096) | split("\r\n")[0]
+```
+
+These builtins don't exist in jq, so programs that use them only run when compiled with
+jq-llvm.
+
+### An HTTP client and server in jq
+
+[`examples/http.jq`](examples/http.jq) is a small HTTP/1.0 client written in jq on top
+of those builtins. It handles URL parsing, query strings, headers, JSON bodies and
+response parsing. There is no TLS, so it only supports `http://` URLs.
+
+```sh
+jq-llvm -L examples -o get 'include "http"; http_get($url) | .status, .headers["content-type"]'
+./get -n --arg url http://example.com/
+
+jq-llvm -L examples 'include "http";
+  http({method: "POST", url: "http://localhost:8080/items",
+        headers: {"X-Token": "abc"}, query: {page: 2}, body: {name: "x"}}) | http_json' --run -n
+```
+
+[`examples/http_server.jq`](examples/http_server.jq) is a tiny HTTP server, also in jq,
+that answers every request with a JSON description of what it received. `tests/net.sh`
+runs the client against it.
+
+### jqpress: an Express-style web framework in jq
+
+[`examples/jqpress.jq`](examples/jqpress.jq) is a web framework written in jq. An app
+is a filter from a request to responses. Routes are alternatives joined with `,`, and
+the first route that matches wins. Middleware is a filter that wraps another filter:
+
+```jq
+include "jqpress";
+
+def app:
+    get("/"; html("<h1>hello from jq</h1>"))
+  , get("/users/:id"; json({id: .params.id, query: .query}))
+  , post("/echo"; json(.json) | status(201))
+  , get("/files/*"; text("you asked for \(.params["*"])"))
+  , mount("/admin"; bearer_auth("s3cret"; get("/stats"; json({ok: true}))))
+  ;
+
+serve(8080; cors(app))
+```
+
+- **Request:** `{method, path, query, params, headers, cookies, body, json, state}`.
+- **Responses:** `text`, `html`, `json`, `redirect`, `status(code)`, `header(k; v)`
+  and `set_cookie`. A handler can also return a plain string, which is sent as
+  text/plain, or any other value, which is sent as JSON.
+- **Middleware:** `cors`, `bearer_auth`, `catch_errors` and `mount`. Uncaught errors
+  become a JSON 500, and unmatched requests a JSON 404.
+- **State:** jq has no mutation, so `serve_state($port; $init; app)` threads state
+  through the request loop. Handlers read `.state` and return a response with
+  `set_state(...)` to replace it.
+
+[`examples/todo_app.jq`](examples/todo_app.jq) is a complete to-do REST API (CRUD, 201s
+and 404s, CORS) built this way:
+
+```sh
+jq-llvm -f examples/todo_app.jq -o todo && ./todo -n --arg port 8080
+curl -s localhost:8080/api/todos -H 'Content-Type: application/json' -d '{"title":"write a web framework in jq"}'
+curl -s localhost:8080/api/todos
+```
+
+The server handles one connection at a time and speaks HTTP/1.0 with
+`Connection: close`, so it's a toy rather than production software.
 
 `include "name";` loads `name.jq` from the directory of the `-f` file, from `-L`
 directories, or from the current directory. Other module features (`import`,
@@ -185,6 +269,7 @@ nix develop                       # or: install cargo, clang, jq yourself
 cargo build --release
 tests/difftest.sh                 # differential tests against jq (all suites)
 tests/cli.sh                      # CLI options, stderr and exit codes
+tests/net.sh                      # sockets, jq HTTP client/server, jqpress
 tests/bench.sh big.json lines.json
 tests/bench_compute.sh
 ```

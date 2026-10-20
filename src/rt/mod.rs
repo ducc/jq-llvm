@@ -18,6 +18,7 @@ pub mod main;
 pub mod regex;
 pub mod parse;
 pub mod input;
+pub mod net;
 
 use crate::ir::Module;
 
@@ -48,6 +49,7 @@ pub fn emit_runtime(m: &mut Module) {
     builtins::emit(m);
     main::emit(m);
     input::emit(m);
+    net::emit(m);
 }
 
 fn declare_libc(m: &mut Module) {
