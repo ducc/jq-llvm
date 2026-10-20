@@ -1,5 +1,14 @@
 # jq-llvm
 
+> [!WARNING]
+> **This is vibecoded slop. Do not use it for anything real.**
+>
+> The whole thing was written by an AI (Claude) in a single long chat session, and
+> nobody has carefully reviewed it. It passes jq's test suite, but beyond that it's
+> an experiment. Expect bugs, memory-safety issues and wrong answers in cases the
+> tests don't cover. Don't feed it untrusted input, and don't put it anywhere near
+> production. If you want jq, use [jq](https://github.com/jqlang/jq).
+
 **jq-llvm** compiles [jq](https://jqlang.org) programs to native executables via LLVM.
 The resulting binary behaves like `jq <filter>`: it takes the usual jq command-line
 options, reads JSON from files or stdin and writes the same output, but runs the
