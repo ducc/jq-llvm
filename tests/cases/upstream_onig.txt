@@ -1,0 +1,47 @@
+-c	[match("( )*"; "g")]	"abc"
+-c	[match("( )*"; "gn")]	"abc"
+-c	[match(""; "g")]	"ab"
+-c	[match("a"; "gi")]	"āáàä"
+-c	[match(["(bar)"])]	"foo bar"
+-c	[match("bar")]	"ā bar with a combining codepoint U+0304"
+-c	[match("bār")]	"a bār"
+-c	[match(".+?\\b")]	"ā two-codepoint grapheme"
+-c	[match(["foo (?<bar123>bar)? foo", "ig"])]	"foo bar foo foo  foo"
+-c	"a","b","c" | capture("(?<x>a)?b?")	null
+-c	"a","b","c" | match("(?<x>a)?b?")	null
+-c	"a","b","c" | capture("(?<x>a?)?b?")	null
+-c	"a","b","c" | match("(?<x>a?)?b?")	null
+-c	[test("( )*"; "gn")]	"abc"
+-c	[test("ā")]	"ā"
+-c	capture("(?<a>[a-z]+)-(?<n>[0-9]+)")	"xyzzy-14"
+-c	[.[] | sub(", "; ":")]	["a,b, c, d, e,f", ", a,b, c, d, e,f, "]
+-c	sub("^(?<head>.)"; "Head=\(.head) Tail=")	"abcdef"
+-c	[.[] | gsub(", "; ":")]	["a,b, c, d, e,f",", a,b, c, d, e,f, "]
+-c	gsub("(?<d>\\d)"; ":\(.d);")	"a1b2"
+-c	gsub("a";"b")	"aaaaa"
+-c	gsub("(.*)"; ""; "x")	""
+-c	gsub(""; "a"; "g")	""
+-c	gsub("^"; ""; "g")	"a"
+-c	gsub(""; "a"; "g")	"a"
+-c	gsub("$"; "a"; "g")	"a"
+-c	gsub("^"; "a")	""
+-c	gsub("(?=u)"; "u")	"qux"
+-c	gsub("^.*a"; "b")	"aaa"
+-c	gsub("^.*?a"; "b")	"aaa"
+-c	[gsub("a"; "b", "c")]	"a"
+-c	[.[] | scan(", ")]	["a,b, c, d, e,f",", a,b, c, d, e,f, "]
+-c	[.[]|[[sub(", *";":")], [gsub(", *";":")], [scan(", *")]]]	["a,b, c, d, e,f",", a,b, c, d, e,f, "]
+-c	[.[]|[[sub(", +";":")], [gsub(", +";":")], [scan(", +")]]]	["a,b, c, d, e,f",", a,b, c, d, e,f, "]
+-c	[.[] | scan("b+"; "i")]	["","bBb","abcABBBCabbbc"]
+-c	gsub("(?<x>.)[^a]*"; "+\(.x)-")	"Abcabc"
+-c	gsub("(?<x>.)(?<y>[0-9])"; "\(.x|ascii_downcase)\(.y)")	"A1 B2 CD"
+-c	gsub("\\b(?<x>.)"; "\(.x|ascii_downcase)")	"ABC DEF"
+-c	gsub("[^a-z]*(?<x>[a-z]*)"; "Z\(.x)")	"123foo456bar"
+-c	sub("(?<x>.)"; "\(.x)!")	"’"
+-c	[sub("a"; "b", "c")]	"a"
+-c	[sub("(?<a>.)"; "\(.a|ascii_upcase)", "\(.a|ascii_downcase)", "c")]	"aB"
+-c	[gsub("(?<a>.)"; "\(.a|ascii_upcase)", "\(.a|ascii_downcase)", "c")]	"aB"
+-c	[splits("")]	"ab"
+-c	[splits("c")]	"ab"
+-c	[splits("a+"; "i")]	"abAABBabA"
+-c	[splits("b+"; "i")]	"abAABBabA"

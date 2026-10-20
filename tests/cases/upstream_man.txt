@@ -1,0 +1,231 @@
+-c	.	"Hello, world!"
+-c	.	0.12345678901234567890123456789
+-c	[., tojson] == if have_decnum then [12345678909876543212345,"12345678909876543212345"] else [12345678909876543000000,"12345678909876543000000"] end	12345678909876543212345
+-c	[1234567890987654321,-1234567890987654321 | tojson] == if have_decnum then ["1234567890987654321","-1234567890987654321"] else ["1234567890987654400","-1234567890987654400"] end	null
+-c	. < 0.12345678901234567890123456788	0.12345678901234567890123456789
+-c	map([., . == 1]) | tojson == if have_decnum then "[[1,true],[1.000,true],[1.0,true],[1.00,true]]" else "[[1,true],[1,true],[1,true],[1,true]]" end	[1, 1.000, 1.0, 100e-2]
+-c	. as $big | [$big, $big + 1] | map(. > 10000000000000000000000000000000) | . == if have_decnum then [true, false] else [false, false] end	10000000000000000000000000000001
+-c	.foo	{"foo": 42, "bar": "less interesting data"}
+-c	.foo	{"notfoo": true, "alsonotfoo": false}
+-c	.["foo"]	{"foo": 42}
+-c	.foo?	{"foo": 42, "bar": "less interesting data"}
+-c	.foo?	{"notfoo": true, "alsonotfoo": false}
+-c	.["foo"]?	{"foo": 42}
+-c	[.foo?]	[1,2]
+-c	.[0]	[{"name":"JSON", "good":true}, {"name":"XML", "good":false}]
+-c	.[2]	[{"name":"JSON", "good":true}, {"name":"XML", "good":false}]
+-c	.[-2]	[1,2,3]
+-c	.[2:4]	["a","b","c","d","e"]
+-c	.[2:4]	"abcdefghi"
+-c	.[:3]	["a","b","c","d","e"]
+-c	.[-2:]	["a","b","c","d","e"]
+-c	.[]	[{"name":"JSON", "good":true}, {"name":"XML", "good":false}]
+-c	.[]	[]
+-c	.foo[]	{"foo":[1,2,3]}
+-c	.[]	{"a": 1, "b": 1}
+-c	.foo, .bar	{"foo": 42, "bar": "something else", "baz": true}
+-c	.user, .projects[]	{"user":"stedolan", "projects": ["jq", "wikiflow"]}
+-c	.[4,2]	["a","b","c","d","e"]
+-c	.[] | .name	[{"name":"JSON", "good":true}, {"name":"XML", "good":false}]
+-c	(. + 2) * 5	1
+-c	[.user, .projects[]]	{"user":"stedolan", "projects": ["jq", "wikiflow"]}
+-c	[ .[] | . * 2]	[1, 2, 3]
+-c	{user, title: .titles[]}	{"user":"stedolan","titles":["JQ Primer", "More JQ"]}
+-c	{(.user): .titles}	{"user":"stedolan","titles":["JQ Primer", "More JQ"]}
+-c	.. | .a?	[[{"a":1}]]
+-c	.a + 1	{"a": 7}
+-c	.a + .b	{"a": [1,2], "b": [3,4]}
+-c	.a + null	{"a": 1}
+-c	.a + 1	{}
+-c	{a: 1} + {b: 2} + {c: 3} + {a: 42}	null
+-c	4 - .a	{"a":3}
+-c	. - ["xml", "yaml"]	["xml", "yaml", "json"]
+-c	10 / . * 3	5
+-c	. / ", "	"a, b,c,d, e"
+-c	{"k": {"a": 1, "b": 2}} * {"k": {"a": 0,"c": 3}}	null
+-c	.[] | (1 / .)?	[1,0,-1]
+-c	map(abs)	[-10, -1.1, -1e-1]
+-c	.[] | length	[[1,2], "string", {"a":2}, null, -5]
+-c	utf8bytelength	"\u03bc"
+-c	keys	{"abc": 1, "abcd": 2, "Foo": 3}
+-c	keys	[42,3,35]
+-c	map(has("foo"))	[{"foo": 42}, {}]
+-c	map(has(2))	[[0,1], ["a","b","c"]]
+-c	.[] | in({"foo": 42})	["foo", "bar"]
+-c	map(in([0,1]))	[2, 0]
+-c	map(.+1)	[1,2,3]
+-c	map_values(.+1)	{"a": 1, "b": 2, "c": 3}
+-c	map(., .)	[1,2]
+-c	map_values(. // empty)	{"a": null, "b": true, "c": false}
+-c	pick(.a, .b.c, .x)	{"a": 1, "b": {"c": 2, "d": 3}, "e": 4}
+-c	pick(.[2], .[0], .[0])	[1,2,3,4]
+-c	path(.a[0].b)	null
+-c	[path(..)]	{"a":[{"b":1}]}
+-c	del(.foo)	{"foo": 42, "bar": 9001, "baz": 42}
+-c	del(.[1, 2])	["foo", "bar", "baz"]
+-c	getpath(["a","b"])	null
+-c	[getpath(["a","b"], ["a","c"])]	{"a":{"b":0, "c":1}}
+-c	setpath(["a","b"]; 1)	null
+-c	setpath(["a","b"]; 1)	{"a":{"b":0}}
+-c	setpath([0,"a"]; 1)	null
+-c	delpaths([["a","b"]])	{"a":{"b":1},"x":{"y":2}}
+-c	to_entries	{"a": 1, "b": 2}
+-c	from_entries	[{"key":"a", "value":1}, {"key":"b", "value":2}]
+-c	with_entries(.key |= "KEY_" + .)	{"a": 1, "b": 2}
+-c	map(select(. >= 2))	[1,5,3,0,7]
+-c	.[] | select(.id == "second")	[{"id": "first", "val": 1}, {"id": "second", "val": 2}]
+-c	.[]|numbers	[[],{},1,"foo",null,true,false]
+-c	1, empty, 2	null
+-c	[1,2,empty,3]	null
+-c	try error catch .	"error message"
+-c	try error("invalid value: \(.)") catch .	42
+-c	try error("\($__loc__)") catch .	null
+-c	[paths]	[1,[[],{"a":2}]]
+-c	[paths(type == "number")]	[1,[[],{"a":2}]]
+-c	add	["a","b","c"]
+-c	add	[1, 2, 3]
+-c	add	[]
+-c	add(.[].a)	[{"a":3}, {"a":5}, {"b":6}]
+-c	any	[true, false]
+-c	any	[false, false]
+-c	any	[]
+-c	all	[true, false]
+-c	all	[true, true]
+-c	all	[]
+-c	flatten	[1, [2], [[3]]]
+-c	flatten(1)	[1, [2], [[3]]]
+-c	flatten	[[]]
+-c	flatten	[{"foo": "bar"}, [{"foo": "baz"}]]
+-c	range(2; 4)	null
+-c	[range(2; 4)]	null
+-c	[range(4)]	null
+-c	[range(0; 10; 3)]	null
+-c	[range(0; 10; -1)]	null
+-c	[range(0; -5; -1)]	null
+-c	floor	3.14159
+-c	sqrt	9
+-c	.[] | tonumber	[1, "1"]
+-c	.[] | toboolean	["true", "false", true, false]
+-c	.[] | tostring	[1, "1", [1]]
+-c	map(type)	[0, false, [], {}, null, "hello"]
+-c	.[] | (infinite * .) < 0	[-1, 1]
+-c	infinite, nan | type	null
+-c	sort	[8,3,null,6]
+-c	sort_by(.foo)	[{"foo":4, "bar":10}, {"foo":3, "bar":10}, {"foo":2, "bar":1}]
+-c	sort_by(.foo, .bar)	[{"foo":4, "bar":10}, {"foo":3, "bar":20}, {"foo":2, "bar":1}, {"foo":3, "bar":10}]
+-c	group_by(.foo)	[{"foo":1, "bar":10}, {"foo":3, "bar":100}, {"foo":1, "bar":1}]
+-c	min	[5,4,2,7]
+-c	max_by(.foo)	[{"foo":1, "bar":14}, {"foo":2, "bar":3}]
+-c	unique	[1,2,5,3,5,3,1,3]
+-c	unique_by(.foo)	[{"foo": 1, "bar": 2}, {"foo": 1, "bar": 3}, {"foo": 4, "bar": 5}]
+-c	unique_by(length)	["chunky", "bacon", "kitten", "cicada", "asparagus"]
+-c	reverse	[1,2,3,4]
+-c	contains("bar")	"foobar"
+-c	contains(["baz", "bar"])	["foobar", "foobaz", "blarp"]
+-c	contains(["bazzzzz", "bar"])	["foobar", "foobaz", "blarp"]
+-c	contains({foo: 12, bar: [{barp: 12}]})	{"foo": 12, "bar":[1,2,{"barp":12, "blip":13}]}
+-c	contains({foo: 12, bar: [{barp: 15}]})	{"foo": 12, "bar":[1,2,{"barp":12, "blip":13}]}
+-c	indices(", ")	"a,b, cd, efg, hijk"
+-c	indices(1)	[0,1,2,1,3,1,4]
+-c	indices([1,2])	[0,1,2,3,1,4,2,5,1,2,6,7]
+-c	index(", ")	"a,b, cd, efg, hijk"
+-c	index(1)	[0,1,2,1,3,1,4]
+-c	index([1,2])	[0,1,2,3,1,4,2,5,1,2,6,7]
+-c	rindex(", ")	"a,b, cd, efg, hijk"
+-c	rindex(1)	[0,1,2,1,3,1,4]
+-c	rindex([1,2])	[0,1,2,3,1,4,2,5,1,2,6,7]
+-c	inside("foobar")	"bar"
+-c	inside(["foobar", "foobaz", "blarp"])	["baz", "bar"]
+-c	inside(["foobar", "foobaz", "blarp"])	["bazzzzz", "bar"]
+-c	inside({"foo": 12, "bar":[1,2,{"barp":12, "blip":13}]})	{"foo": 12, "bar": [{"barp": 12}]}
+-c	inside({"foo": 12, "bar":[1,2,{"barp":12, "blip":13}]})	{"foo": 12, "bar": [{"barp": 15}]}
+-c	[.[]|startswith("foo")]	["fo", "foo", "barfoo", "foobar", "barfoob"]
+-c	[.[]|endswith("foo")]	["foobar", "barfoo"]
+-c	combinations	[[1,2], [3, 4]]
+-c	combinations(2)	[0, 1]
+-c	[.[]|ltrimstr("foo")]	["fo", "foo", "barfoo", "foobar", "afoo"]
+-c	[.[]|rtrimstr("foo")]	["fo", "foo", "barfoo", "foobar", "foob"]
+-c	[.[]|trimstr("foo")]	["fo", "foo", "barfoo", "foobarfoo", "foob"]
+-c	trim, ltrim, rtrim	" abc "
+-c	explode	"foobar"
+-c	implode	[65, 66, 67]
+-c	join(", ")	["a","b,c,d","e"]
+-c	join(" ")	["a",1,2.3,true,null,false]
+-c	ascii_upcase	"useful but not for é"
+-c	[while(.<100; .*2)]	1
+-c	[repeat(.*2, error)?]	1
+-c	[.,1]|until(.[0] < 1; [.[0] - 1, .[1] * .[0]])|.[1]	4
+-c	recurse(.foo[])	{"foo":[{"foo": []}, {"foo":[{"foo":[]}]}]}
+-c	recurse	{"a":0,"b":[1]}
+-c	recurse(. * .; . < 20)	2
+-c	walk(if type == "array" then sort else . end)	[[4, 1, 7], [8, 5, 2], [3, 6, 9]]
+-c	$ENV.PAGER	null
+-c	env.PAGER	null
+-c	transpose	[[1], [2,3]]
+-c	bsearch(0)	[0,1]
+-c	bsearch(0)	[1,2,3]
+-c	bsearch(4) as $ix | if $ix < 0 then .[-(1+$ix)] = 4 else . end	[1,2,3]
+-c	"The input was \(.), which is one less than \(.+1)"	42
+-c	[.[]|tostring]	[1, "foo", ["foo"]]
+-c	[.[]|tojson]	[1, "foo", ["foo"]]
+-c	[.[]|tojson|fromjson]	[1, "foo", ["foo"]]
+-c	@html	"This works if x < y"
+-c	@sh "echo \(.)"	"O'Hara's Ale"
+-c	@base64	"This is a message"
+-c	@base64d	"VGhpcyBpcyBhIG1lc3NhZ2U="
+-c	fromdate	"2015-03-05T23:51:47Z"
+-c	strptime("%Y-%m-%dT%H:%M:%SZ")	"2015-03-05T23:51:47Z"
+-c	strptime("%Y-%m-%dT%H:%M:%SZ")|mktime	"2015-03-05T23:51:47Z"
+-c	. == false	null
+-c	. == {"b": {"d": (4 + 1e-20), "c": 3}, "a":1}	{"a":1, "b": {"c": 3, "d": 4}}
+-c	.[] == 1	[1, 1.0, "1", "banana"]
+-c	if . == 0 then   "zero" elif . == 1 then   "one" else   "many" end	2
+-c	. < 5	2
+-c	42 and "a string"	null
+-c	(true, false) or false	null
+-c	(true, true) and (true, false)	null
+-c	[true, false | not]	null
+-c	empty // 42	null
+-c	.foo // 42	{"foo": 19}
+-c	.foo // 42	{}
+-c	(false, null, 1) // 42	null
+-c	(false, null, 1) | . // 42	null
+-c	try .a catch ". is not an object"	true
+-c	[.[]|try .a]	[{}, true, {"a":1}]
+-c	try error("some exception") catch .	true
+-c	[.[] | .a?]	[{}, true, {"a":1}]
+-c	[.[] | tonumber?]	["1", "invalid", "3", 4]
+-c	.bar as $x | .foo | . + $x	{"foo":10, "bar":200}
+-c	. as $i|[(.*2|. as $i| $i), $i]	5
+-c	. as [$a, $b, {c: $c}] | $a + $b + $c	[2, 3, {"c": 4, "d": 5}]
+-c	.[] as [$a, $b] | {a: $a, b: $b}	[[0], [0, 1], [2, 1, 0]]
+-c	.[] as {$a, $b, c: {$d, $e}} ?// {$a, $b, c: [{$d, $e}]} | {$a, $b, $d, $e}	[{"a": 1, "b": 2, "c": {"d": 3, "e": 4}}, {"a": 1, "b": 2, "c": [{"d": 3, "e": 4}]}]
+-c	.[] as {$a, $b, c: {$d}} ?// {$a, $b, c: [{$e}]} | {$a, $b, $d, $e}	[{"a": 1, "b": 2, "c": {"d": 3, "e": 4}}, {"a": 1, "b": 2, "c": [{"d": 3, "e": 4}]}]
+-c	.[] as [$a] ?// [$b] | if $a != null then error("err: \($a)") else {$a,$b} end	[[3]]
+-c	def addvalue(f): . + [f]; map(addvalue(.[0]))	[[1,2],[10,20]]
+-c	def addvalue(f): f as $x | map(. + $x); addvalue(.[0])	[[1,2],[10,20]]
+-c	isempty(empty)	null
+-c	isempty(.[])	[]
+-c	isempty(.[])	[1,2,3]
+-c	[limit(3; .[])]	[0,1,2,3,4,5,6,7,8,9]
+-c	[skip(3; .[])]	[0,1,2,3,4,5,6,7,8,9]
+-c	[first(range(.)), last(range(.)), nth(5; range(.))]	10
+-c	[first(empty), last(empty), nth(5; empty)]	null
+-c	[range(.)]|[first, last, nth(5)]	10
+-c	reduce .[] as $item (0; . + $item)	[1,2,3,4,5]
+-c	reduce .[] as [$i,$j] (0; . + $i * $j)	[[1,2],[3,4],[5,6]]
+-c	reduce .[] as {$x,$y} (null; .x += $x | .y += [$y])	[{"x":"a","y":1},{"x":"b","y":2},{"x":"c","y":3}]
+-c	foreach .[] as $item (0; . + $item)	[1,2,3,4,5]
+-c	foreach .[] as $item (0; . + $item; [$item, . * 2])	[1,2,3,4,5]
+-c	foreach .[] as $item (0; . + 1; {index: ., $item})	["foo", "bar", "baz"]
+-c	def range(init; upto; by): def _range: if (by > 0 and . < upto) or (by < 0 and . > upto) then ., ((.+by)|_range) else empty end; if init == upto then empty elif by == 0 then init else init|_range end; range(0; 10; 3)	null
+-c	def while(cond; update): def _while: if cond then ., (update | _while) else empty end; _while; [while(.<100; .*2)]	1
+-c	truncate_stream([[0],"a"],[[1,0],"b"],[[1,0]],[[1]])	1
+-c	fromstream(1|truncate_stream([[0],"a"],[[1,0],"b"],[[1,0]],[[1]]))	null
+-c	. as $dot|fromstream($dot|tostream)|.==$dot	[0,[1,{"a":1},{"b":2}]]
+-c	(..|select(type=="boolean")) |= if . then 1 else 0 end	[true,false,[5,true,[true,[false]],false]]
+-c	.foo += 1	{"foo": 42}
+-c	.a = .b	{"a": {"b": 10}, "b": 20}
+-c	.a |= .b	{"a": {"b": 10}, "b": 20}
+-c	(.a, .b) = range(3)	null
+-c	(.a, .b) |= range(3)	null

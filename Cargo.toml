@@ -1,0 +1,16 @@
+[package]
+name = "jq-llvm"
+version = "0.1.0"
+edition = "2024"
+description = "A compiler from jq programs to native executables via LLVM"
+license = "MIT"
+
+[[bin]]
+name = "jq-llvm"
+path = "src/main.rs"
+
+[dependencies]
+
+[profile.release]
+lto = true
+codegen-units = 1
