@@ -182,3 +182,13 @@ tests/bench_compute.sh
 
 `JQC_STRICT=1` makes the IR builder panic if an instruction is emitted after a
 terminator. The test scripts set it.
+
+## License
+
+MIT, see [LICENSE](LICENSE).
+
+jq-llvm is an independent implementation of [jq](https://github.com/jqlang/jq), by
+Stephen Dolan and the jq contributors, and wouldn't exist without it. The prelude
+(`src/prelude.jq`) mirrors jq's `builtin.jq`, and the `tests/cases/upstream_*.txt`
+suites are converted from jq's test suite and manual examples; these parts remain
+under jq's MIT license (and the manual under CC BY 3.0). See [LICENSE](LICENSE).

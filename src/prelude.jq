@@ -1,3 +1,5 @@
+# Derived from jq's src/builtin.jq, copyright (C) 2012 Stephen Dolan, MIT license
+# (see LICENSE).
 # Builtins defined in jq, mirroring jq 1.8.1's builtin.jq. Hot or simple
 # builtins are native (src/rt/builtins.rs) or special forms in the code
 # generator (path, getpath, range, limit, first, error, empty, input, ...).
