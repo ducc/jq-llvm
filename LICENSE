@@ -22,8 +22,11 @@ SOFTWARE.
 
 -------------------------------------------------------------------------------
 
-Portions of this repository are derived from jq 1.8.1
-(https://github.com/jqlang/jq):
+jq-llvm is a reimplementation of jq 1.8.1 (https://github.com/jqlang/jq) and
+is a derivative of it as a whole: its grammar, semantics, builtins, error
+messages and command-line interface follow jq, and parts of the runtime are
+ports of jq's C source (for example delpaths, from jv_delpaths/jv_dels).
+In particular:
 
   - src/prelude.jq mirrors jq's src/builtin.jq
   - tests/cases/upstream_*.txt are converted from jq's tests/*.test; the cases

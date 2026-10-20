@@ -187,8 +187,10 @@ terminator. The test scripts set it.
 
 MIT, see [LICENSE](LICENSE).
 
-jq-llvm is an independent implementation of [jq](https://github.com/jqlang/jq), by
-Stephen Dolan and the jq contributors, and wouldn't exist without it. The prelude
-(`src/prelude.jq`) mirrors jq's `builtin.jq`, and the `tests/cases/upstream_*.txt`
-suites are converted from jq's test suite and manual examples; these parts remain
-under jq's MIT license (and the manual under CC BY 3.0). See [LICENSE](LICENSE).
+jq-llvm is a reimplementation of [jq](https://github.com/jqlang/jq), by Stephen Dolan
+and the jq contributors, and is derived from it throughout: the grammar, semantics,
+builtins, error messages and CLI follow jq 1.8.1, and parts of the runtime are ports
+of jq's C source. The prelude (`src/prelude.jq`) mirrors jq's `builtin.jq`, and the
+`tests/cases/upstream_*.txt` suites are converted from jq's test suite and manual
+examples. jq's copyright and license notice (MIT; CC BY 3.0 for its manual) is
+included in [LICENSE](LICENSE).
